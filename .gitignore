@@ -1,0 +1,11 @@
+mx.scratch
+!.settings
+build/
+cmake-build-*/
+*.o
+*.elf
+*.bin
+*.hex
+*.map
+*.su
+.mxtemp/
