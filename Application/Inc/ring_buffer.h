@@ -13,8 +13,9 @@ typedef struct {
 } ring_buffer_t;
 
 void ring_buffer_init(ring_buffer_t *rb);
-bool ring_buffer_push(ring_buffer_t *rb, const uint8_t *frame, uint32_t len);
-bool ring_buffer_pop(ring_buffer_t *rb, uint8_t *out, uint32_t max_len, uint32_t *actual_len);
+bool ring_buffer_push(ring_buffer_t *rb, const current_data_t *data, uint8_t len);
+bool ring_buffer_pop(ring_buffer_t *rb, uint8_t *out, uint32_t max_len, uint8_t *actual_len);
 uint32_t ring_buffer_count(ring_buffer_t *rb);
+
 
 #endif /* RING_BUFFER_H */

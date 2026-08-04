@@ -22,6 +22,7 @@
 #include "fdcan.h"
 #include "icache.h"
 #include "sdmmc.h"
+#include "usart.h"
 #include "usb.h"
 #include "gpio.h"
 
@@ -100,6 +101,7 @@ int main(void)
   MX_ICACHE_Init();
   MX_SDMMC1_SDIO_Init();
   MX_USB_PCD_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
   state_machine_init();
   /* USER CODE END 2 */
@@ -108,8 +110,9 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
     state_machine_poll();
+    /* USER CODE END WHILE */
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

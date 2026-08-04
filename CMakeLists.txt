@@ -45,11 +45,18 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
+    Application/Src/ring_buffer.c
+    Application/Src/can_ingest.c
+    Application/Src/sd_logger.c
+    Application/Src/rf_telemetry.c
+    Application/Src/usb_handler.c
+    Application/Src/state_machine.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
+    Application/Inc
 )
 
 # Add project symbols (macros)
