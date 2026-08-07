@@ -12,6 +12,12 @@
 /* Private Helper Prototypes */
 void state_machine_update(void);
 void state_machine_transition(state_t);
+void can_set_standby(void);
+void can_resume(void);
+void sd_power_off(void);
+void sd_power_on(void);
+void rf_power_off(void);
+void rf_power_on(void);
 
 
 
@@ -88,6 +94,7 @@ void state_machine_poll(void) {
 
         case STATE_SHUTDOWN:
             rf_telemetry_suspend();
+            log_write(get_log_time(), LOG_DEBUG, "STATE", "Shutting down...");
             if (!sd_unmount()) {
                 state = STATE_OFF;
             }
@@ -95,16 +102,20 @@ void state_machine_poll(void) {
             break;
 
         case STATE_FAULT:
-
+            log_write(get_log_time(), LOG_FAULT, "STATE", "In Fault state");
 
 
             break;
 
         case STATE_OFF:
-
-
-
-            break;
+            can_set_standby();
+            sd_power_disable();
+            gpio_park_unused_analog();
+            wakeup_pin_arm();
+            HAL_SuspendTick();
+            __disable_irq();
+            __DSB();
+            HAL_PWR_EnterSTANDBYMode();
 
         default:
             state = STATE_FAULT;
@@ -145,4 +156,16 @@ void state_machine_update(void) {
 
 void state_machine_transition(state_t next_state) {
     state = next_state;
+}
+
+void can_set_standby(void) {
+    // set can transciever to standby
+
+
+}
+
+void can_resume(void) {
+    // set can transciever to active
+
+
 }
