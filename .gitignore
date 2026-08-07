@@ -1,12 +1,49 @@
-mx.scratch
-!.settings
+# ─── Build output ──────────────────────────────────────────────────────────
 build/
 cmake-build-*/
+
+# ─── Compiler / linker artifacts ──────────────────────────────────────────
+# Normally inside build/, but caught here in case of an out-of-tree build
 *.o
+*.d
 *.elf
 *.bin
 *.hex
 *.map
+*.lst
 *.su
+
+# ─── CMake ────────────────────────────────────────────────────────────────
+# CMakePresets.json stays tracked (shared); the User variant is local-only
+CMakeUserPresets.json
+compile_commands.json
+
+# ─── STM32CubeMX ──────────────────────────────────────────────────────────
+mx.scratch
 .mxtemp/
+.mxproject
+*.ioc.bak
+
+# ─── IDE / editor ─────────────────────────────────────────────────────────
+# Eclipse / CubeIDE
 .settings/
+.cproject
+.project
+
+# VS Code — ignore user settings, keep launch.json tracked so the team
+# inherits a working debug configuration
+.vscode/settings.json
+.vscode/ipch/
+
+.idea/
+
+# ─── OS / OneDrive litter ─────────────────────────────────────────────────
+desktop.ini
+Thumbs.db
+.DS_Store
+
+# ─── Tracked exceptions ───────────────────────────────────────────────────
+# Archived competition binaries: keep these despite the *.hex/*.bin rules
+# above, so a suspect MF4 file can be traced to the firmware that wrote it
+!Releases/**/*.hex
+!Releases/**/*.bin
