@@ -36,20 +36,47 @@ add_executable(${CMAKE_PROJECT_NAME})
 
 # Add STM32CubeMX generated sources
 add_subdirectory(cmake/stm32cubemx)
+# ── FatFs ──────────────────────────────────────────────────────────────────
+set(FATFS_DIR ${CMAKE_CURRENT_LIST_DIR}/Lib/FatFs/source)
+
+add_library(fatfs STATIC
+    ${FATFS_DIR}/ff.c
+    ${FATFS_DIR}/ffunicode.c
+)
+
+target_include_directories(fatfs PUBLIC ${FATFS_DIR})
+
+# diskio.c needs HAL headers + the HAL's compile definitions.
+# Don't link stm32cubemx here — it carries HAL sources via target_sources(),
+# so linking would compile the whole HAL into this library and produce
+# duplicate symbols at final link. Extract only the properties we need.
+target_include_directories(fatfs PRIVATE
+    $<TARGET_PROPERTY:stm32cubemx,INTERFACE_INCLUDE_DIRECTORIES>
+)
+target_compile_definitions(fatfs PRIVATE
+    $<TARGET_PROPERTY:stm32cubemx,INTERFACE_COMPILE_DEFINITIONS>
+)
+
+target_compile_options(fatfs PRIVATE -Wno-unused-parameter -Wno-sign-compare)
 
 # Link directories setup
-target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user defined library search paths
+target_link_libraries(${CMAKE_PROJECT_NAME}
+    stm32cubemx
+    fatfs
 )
 
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user sources here
+    Application/Src/can_ingest.c
+    Application/Src/rf_link.c
+    Application/Src/timebase.c
+    Application/Src/can_relay.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
+    Application/Inc
 )
 
 # Add project symbols (macros)
@@ -66,3 +93,5 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 
     # Add user defined libraries
 )
+
+target_include_directories(stm32cubemx INTERFACE ${FATFS_DIR})
