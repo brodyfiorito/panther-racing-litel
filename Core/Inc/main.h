@@ -57,19 +57,12 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define PWR_STATUS_Pin GPIO_PIN_0
-#define PWR_STATUS_GPIO_Port GPIOA
-#define PWR_STATUS_EXTI_IRQn EXTI0_IRQn
-#define ST_LED_Pin GPIO_PIN_2
+#define ST_LED_Pin GPIO_PIN_3
 #define ST_LED_GPIO_Port GPIOA
-#define SD_PWR_Pin GPIO_PIN_3
-#define SD_PWR_GPIO_Port GPIOA
-#define RF_PWR_Pin GPIO_PIN_6
-#define RF_PWR_GPIO_Port GPIOA
 #define SD_CD_Pin GPIO_PIN_0
 #define SD_CD_GPIO_Port GPIOB
-#define RF_SWO_Pin GPIO_PIN_15
-#define RF_SWO_GPIO_Port GPIOB
+#define CAN_STB_Pin GPIO_PIN_6
+#define CAN_STB_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

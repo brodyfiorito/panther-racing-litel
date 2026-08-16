@@ -18,19 +18,21 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "crc.h"
 #include "fdcan.h"
 #include "icache.h"
+#include "iwdg.h"
 #include "rtc.h"
-#include "sdmmc.h"
 #include "tim.h"
 #include "usart.h"
-#include "usb.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "state_machine.h"
+#include "ring_buffer.h"
+#include "can_ingest.h"
+#include "can_relay.h"
+#include "rf_link.h"
+#include "timebase.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,7 +53,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+static ring_buffer_t rb;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -98,24 +100,32 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_CRC_Init();
   MX_FDCAN1_Init();
   MX_ICACHE_Init();
-  MX_SDMMC1_SD_Init();
-  MX_USB_PCD_Init();
   MX_USART3_UART_Init();
   MX_TIM2_Init();
   MX_RTC_Init();
+  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
-  HAL_TIM_Base_Start_IT(&htim2);
-  state_machine_init();
+  HAL_GPIO_WritePin(CAN_STB_GPIO_Port, CAN_STB_Pin, GPIO_PIN_SET);  // enable can transceiver
+  HAL_TIM_Base_Start(&htim2);
+  timebase_init();
+  ring_buffer_init(&rb);
+  can_ingest_init(&hfdcan1, &rb);    // filters, start CAN, enable RX interrupt
+  rf_link_init();
+  can_relay_init();
+  HAL_IWDG_Refresh(&hiwdg);
+  
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    state_machine_poll();
+        rf_link_poll();      // drain queue -> frame -> DMA; parse uplink
+        can_relay_poll();    // validated uplink -> CAN TX mailbox
+        can_ingest_poll();   // bus-off recovery, error counters
+        HAL_IWDG_Refresh(&hiwdg);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -141,10 +151,8 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI48|RCC_OSCILLATORTYPE_LSI
-                              |RCC_OSCILLATORTYPE_CSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_CSI;
   RCC_OscInitStruct.LSIState = RCC_LSI_ON;
-  RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
   RCC_OscInitStruct.CSIState = RCC_CSI_ON;
   RCC_OscInitStruct.CSICalibrationValue = RCC_CSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;

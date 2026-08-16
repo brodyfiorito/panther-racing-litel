@@ -67,13 +67,10 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user sources here
-    Application/Src/ring_buffer.c
     Application/Src/can_ingest.c
-    Application/Src/sd_logger.c
-    Application/Src/rf_telemetry.c
-    Application/Src/usb_handler.c
-    Application/Src/state_machine.c
+    Application/Src/rf_link.c
+    Application/Src/timebase.c
+    Application/Src/can_relay.c
 )
 
 # Add include paths
