@@ -69,8 +69,8 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     Application/Src/can_ingest.c
     Application/Src/rf_link.c
-    Application/Src/timebase.c
     Application/Src/can_relay.c
+    Application/Src/relay_status.c
 )
 
 # Add include paths
