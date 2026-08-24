@@ -32,7 +32,6 @@
 #include "can_ingest.h"
 #include "can_relay.h"
 #include "rf_link.h"
-#include "timebase.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -108,10 +107,9 @@ int main(void)
   MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
   HAL_GPIO_WritePin(CAN_STB_GPIO_Port, CAN_STB_Pin, GPIO_PIN_SET);  // enable can transceiver
-  HAL_TIM_Base_Start(&htim2);
-  timebase_init();
+  HAL_FDCAN_Start(&hfdcan1);
   ring_buffer_init(&rb);
-  can_ingest_init(&hfdcan1, &rb);    // filters, start CAN, enable RX interrupt
+  can_ingest_init(&hfdcan1, &rb);     // filters, enable CAN RX interrupt
   rf_link_init();
   can_relay_init();
   HAL_IWDG_Refresh(&hiwdg);
@@ -122,9 +120,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-        rf_link_poll();      // drain queue -> frame -> DMA; parse uplink
-        can_relay_poll();    // validated uplink -> CAN TX mailbox
-        can_ingest_poll();   // bus-off recovery, error counters
+        rf_link_poll();      // ring buffer -> RFD900ux UART; RFD900ux UART -> CAN TX mailbox
+        can_relay_poll();    // CAN TX mailbox -> FIFO; bus-off recovery
+        can_ingest_poll();   // refresh error counters
+        relay_status_collect();
         HAL_IWDG_Refresh(&hiwdg);
     /* USER CODE END WHILE */
 
