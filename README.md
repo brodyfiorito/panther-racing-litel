@@ -20,7 +20,7 @@ LiTel sits on the vehicle CAN bus, ingests broadcast frames from the MoTeC M150 
 
 <!-- 3D render: isometric top view of the assembled board -->
 <p align="center">
-  <img src="docs/images/3d-datalogger.png" alt="LiTel 3D render — isometric view" width="700">
+  <img src="docs/images/relay.png" alt="LiTel 3D render — isometric view" width="700">
 </p>
 <p align="center"><em>Fig. 1 — Assembled board in Altium.</em></p>
 
