@@ -47,7 +47,7 @@ LiTel sits on the vehicle CAN bus, ingests broadcast frames from the MoTeC M150 
   └──────────────┘                  │  → COBS framer → UART    │
                                     └──────────────────────────┘
                                                                      ┌──────────────────────────┐
-                                                          ((( 900 MHz │  RFD900x + FTDI → Pi 4   │
+                                                         ((( 900 MHz │  RFD900x + FTDI → Pi 4   │
                                                                      │  Wi-Fi AP → dashboard    │
                                                                      └──────────────────────────┘
 ```
