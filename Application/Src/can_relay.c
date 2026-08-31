@@ -46,7 +46,7 @@ static const uint32_t dlc_lut[9] = {
     FDCAN_DLC_BYTES_6, FDCAN_DLC_BYTES_7, FDCAN_DLC_BYTES_8,
 };
 
-static can_relay_stats_t stats;
+static volatile can_relay_stats_t stats;
 static uint8_t tx_fail_run;
 static bool bus_off;
 static uint32_t bus_off_entry_tick;

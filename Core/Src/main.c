@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "fdcan.h"
+#include "gpdma.h"
 #include "icache.h"
 #include "iwdg.h"
 #include "rtc.h"
@@ -99,18 +100,21 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_GPDMA1_Init();
   MX_FDCAN1_Init();
   MX_ICACHE_Init();
   MX_USART3_UART_Init();
   MX_TIM2_Init();
-  MX_RTC_Init();
   MX_IWDG_Init();
+  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
-  HAL_GPIO_WritePin(CAN_STB_GPIO_Port, CAN_STB_Pin, GPIO_PIN_SET);  // enable can transceiver
-  HAL_FDCAN_Start(&hfdcan1);
+  HAL_GPIO_WritePin(CAN_STB_GPIO_Port, CAN_STB_Pin, GPIO_PIN_RESET);  //enable can transceiver
+  HAL_TIM_Base_Start(&htim2);
   ring_buffer_init(&rb);
-  can_ingest_init(&hfdcan1, &rb);     // filters, enable CAN RX interrupt
-  rf_link_init();
+  can_ingest_init(&hfdcan1, &rb);          // sets filters ONLY, in init mode
+  if (HAL_FDCAN_Start(&hfdcan1) != HAL_OK) Error_Handler();
+  can_ingest_start();                      // ActivateNotification here
+  rf_link_init(&rb);
   can_relay_init();
   HAL_IWDG_Refresh(&hiwdg);
   

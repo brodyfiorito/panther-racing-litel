@@ -13,6 +13,7 @@ typedef struct {
 
 void can_ingest_init(FDCAN_HandleTypeDef *hfdcan, ring_buffer_t *rb);
 void can_ingest_poll(void);
+void can_ingest_start(void);
 void can_ingest_get_stats(can_ingest_stats_t *out);
 
 

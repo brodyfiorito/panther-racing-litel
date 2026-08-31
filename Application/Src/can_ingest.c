@@ -13,7 +13,7 @@
 */
 
 /* Private Variables */
-static can_ingest_stats_t stats;
+static volatile can_ingest_stats_t stats;
 static ring_buffer_t *s_rb;
 static FDCAN_HandleTypeDef *s_hfdcan;
 
@@ -32,20 +32,25 @@ void can_ingest_init(FDCAN_HandleTypeDef *hfdcan, ring_buffer_t *rb) {
     s_frames_rx      = 0u;
     s_frames_dropped = 0u;
 
+    memset(&stats, 0, sizeof(stats));
+
     HAL_FDCAN_ConfigGlobalFilter(&hfdcan1,  // edit for top # ids
     FDCAN_ACCEPT_IN_RX_FIFO0,   // non-matching standard IDs
     FDCAN_ACCEPT_IN_RX_FIFO0,   // non-matching extended IDs
     FDCAN_REJECT_REMOTE,
     FDCAN_REJECT_REMOTE);
 
-    HAL_FDCAN_ActivateNotification(&hfdcan1,
-    FDCAN_IT_RX_FIFO0_NEW_MESSAGE | FDCAN_IT_RX_FIFO0_MESSAGE_LOST, 0);
     HAL_FDCAN_Start(&hfdcan1);
 
 }
 
 void can_ingest_poll(void) {
     can_ingest_stats(&stats);
+}
+
+void can_ingest_start(void) {
+    HAL_FDCAN_ActivateNotification(&hfdcan1,
+    FDCAN_IT_RX_FIFO0_NEW_MESSAGE | FDCAN_IT_RX_FIFO0_MESSAGE_LOST, 0);
 }
 
 void can_ingest_get_stats(can_ingest_stats_t *out) {
