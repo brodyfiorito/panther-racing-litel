@@ -33,6 +33,7 @@
 #include "can_ingest.h"
 #include "can_relay.h"
 #include "rf_link.h"
+#include "relay_status.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -108,12 +109,12 @@ int main(void)
   MX_IWDG_Init();
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
-  HAL_GPIO_WritePin(CAN_STB_GPIO_Port, CAN_STB_Pin, GPIO_PIN_RESET);  //enable can transceiver
-  HAL_TIM_Base_Start(&htim2);
+  HAL_GPIO_WritePin(CAN_STB_GPIO_Port, CAN_STB_Pin, GPIO_PIN_RESET);
   ring_buffer_init(&rb);
-  can_ingest_init(&hfdcan1, &rb);          // sets filters ONLY, in init mode
-  if (HAL_FDCAN_Start(&hfdcan1) != HAL_OK) Error_Handler();
-  can_ingest_start();                      // ActivateNotification here
+
+  if (!can_ingest_init(&hfdcan1, &rb)) Error_Handler();
+  can_ingest_start();          /* notifications + HAL_FDCAN_Start */
+
   rf_link_init(&rb);
   can_relay_init();
   HAL_IWDG_Refresh(&hiwdg);
@@ -126,7 +127,6 @@ int main(void)
   {
         rf_link_poll();      // ring buffer -> RFD900ux UART; RFD900ux UART -> CAN TX mailbox
         can_relay_poll();    // CAN TX mailbox -> FIFO; bus-off recovery
-        can_ingest_poll();   // refresh error counters
         relay_status_collect();
         HAL_IWDG_Refresh(&hiwdg);
     /* USER CODE END WHILE */
