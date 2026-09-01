@@ -1,5 +1,5 @@
 /*
- * ring_buffer.h - lock-free SPSC ring for CAN frames (RF ingest → CAN egress)
+ * ring_buffer.h - lock-free SPSC ring for CAN frames
  *
  * One producer (ISR, push only), one consumer (main loop, peek/drop/*_take
  * only). No locking exists for a second of either.
@@ -15,10 +15,6 @@
  * Don't add a fullness check to push() without reconciling it against that
  * margin.
  *
- * 'dropped' and 'hwm' are read-and-clear (per-interval, not cumulative). hwm
- * saturates at RB_CAPACITY - 1 once overrun starts, so read it with 'dropped':
- * below the cap with dropped == 0 means headroom; at the cap with dropped > 0
- * means the depth is short and hwm no longer says by how much.
  */
 
 #ifndef RING_BUFFER_H
@@ -31,14 +27,15 @@
 #include <string.h>
 
 // depth chosen to absorb short ingest bursts; overrun intentionally discards oldest since only current values matter
-#define RB_CAPACITY 16u
+#define RB_CAPACITY 256u
 #define RB_MASK     (RB_CAPACITY - 1u)
 _Static_assert((RB_CAPACITY & RB_MASK) == 0u, "RB_CAPACITY must be a power of two");
 
 typedef struct {
     uint32_t id;
     uint8_t data[8];
-    uint8_t len;    // actual # of bytes used
+    uint8_t len;     // actual # of bytes used
+    uint32_t ts;     // capture time, us in the TIM2 base, wraps at 71.58 min
 } can_frame_t;
 
 typedef struct {
@@ -58,7 +55,7 @@ static inline void ring_buffer_init(ring_buffer_t *rb) {
 }
 
 // Producer: pushes things into the ring buffer, advances unconditionally
-static inline void ring_buffer_push(ring_buffer_t *rb, uint32_t id, const uint8_t *data, uint8_t len) {
+static inline void ring_buffer_push(ring_buffer_t *rb, uint32_t id, const uint8_t *data, uint8_t len, uint32_t ts_us) {
 
     if (len > 8u) len = 8u;
 
@@ -67,6 +64,7 @@ static inline void ring_buffer_push(ring_buffer_t *rb, uint32_t id, const uint8_
 
     s->id = id;
     s->len = len;
+    s->ts = ts_us;
     memcpy(s->data, data, len);
 
     // Release memory ahead of incoming data
