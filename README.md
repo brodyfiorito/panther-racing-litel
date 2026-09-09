@@ -55,11 +55,22 @@ If a subsystem you expected to find described here is absent, it is probably eit
 
 The vehicle side is a single path with no branches: CAN frames arrive by interrupt, land in a ring buffer, get COBS-framed, and go out the UART to the radio. Off the board, an RFD900x on a Raspberry Pi 4 receives the stream, decodes it, and serves a dashboard over a local Wi-Fi access point.
 
-MoTeC M150 and LV nodes → **CAN, 1 Mbit/s** → LiTel (FDCAN RX → ring buffer → COBS framer → UART) → RFD900ux → **900 MHz** → RFD900x + FTDI → Raspberry Pi 4 → Wi-Fi AP → dashboard clients.
+```
+  ┌──────────────┐   CAN 1 Mbit/s   ┌──────────────────────────┐   UART   ┌────────────┐
+  │  MoTeC M150  │ ───────────────► │          LiTel           │ ───────► │  RFD900ux  │ ))) 900 MHz
+  │  + LV nodes  │                  │  FDCAN RX → ring buffer  │          └────────────┘
+  └──────────────┘                  │  → COBS framer → UART    │
+                                    └──────────────────────────┘
+                                                                     ┌──────────────────────────┐
+                                                         ((( 900 MHz │  RFD900x + FTDI → Pi 4   │
+                                                                     │  Wi-Fi AP → dashboard    │
+                                                                     └──────────────────────────┘
+```
 
-Everything past the RF link is out of scope here.
 
 Uplink telemetry is continuous. A low-rate, explicitly whitelisted command path may relay approved frames from the pit to the vehicle CAN bus; it must never be enabled with an empty or broad allowlist. There is no persistent storage on the board.
+
+
 
 ---
 
@@ -101,10 +112,8 @@ Things that are absent on purpose:
 - **No SD logging.** An earlier revision carried SDMMC + FatFs, a hold-up capacitor bank, and an ideal-diode ORing controller to survive power loss mid-write. All of it existed to protect a log that duplicated what the M150 already stores reliably. Removing logging also removed the brownout state machine, the hold-up bank, the ORing controller, and the USB mass-storage interface — a large reduction in board area and firmware, with no loss of capability the team depended on.
 - **No hold-up / brownout circuitry.** Nothing on the board needs to survive a power cut gracefully; a dropped frame during a brownout is indistinguishable from a dropped frame over RF, and both are already tolerated.
 - **No persistent storage of any kind.** The board holds at most one ring buffer's worth of frames.
-- **No CAN FD, no variable DLC.** Everything on the bus is classic 8-byte CAN, so the pipeline assumes a fixed record size end to end.
-- **No ground station here.** Separate system, separate repo; the wire format is the contract between them.
 
-Things that are absent but shouldn't stay that way:
+Things that are absent but won't stay that way:
 
 - **No application-layer CRC.** Framing integrity currently rests on the RFD link CRC alone. An application CRC needs to land together with a timestamp freshness check, since without freshness a replayed valid-CRC frame is accepted as current.
 - **Command path is unimplemented.** The downlink is described above but not built. When it is, it starts closed: an explicit per-ID allowlist, rejected by default, and no build configuration that ships with an empty or wildcard list.
