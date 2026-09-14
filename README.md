@@ -44,7 +44,7 @@ If a subsystem you expected to find described here is absent, it is probably eit
 | MCU | STM32H533 (Cortex-M33, 250 MHz max core) |
 | Stackup | 4-layer, mixed-signal (SIG / GND / PWR / SIG) |
 | Input voltage | Vehicle LV bus |
-| Regulation | TPS54360-Q1 wide-Vin buck |
+| Regulation | ADP2303 buck |
 | CAN | TCAN3404 transceiver — classic CAN, 1 Mbit/s |
 | Radio | RFD900ux (SMT module), 900 MHz ISM |
 | Debug | SWD |
